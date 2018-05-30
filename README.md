@@ -1,16 +1,78 @@
 # ------架构治理平台开发方案-----
-## 表结构设计
+## 一、表结构设计
 ### 数据采集频率(准实时、少于N次/天)
 ### 采集一次数据量
 ### 表理论每日增量
 ### 单表最大数据量级
 ### 数据保留时间
 ### 建表方式(新建、复用单表或日表等)
-## 查询功能模块设计
+## 二、查询功能模块设计
 ### 查询时间方式(特定时间选择or可选择时间区间)
 ### 查询耗时要求
 ### 是否有最大查询时间跨度限制
 ### 是否支持结果导出
+项目对于Excel导出功能已经封装到ExcelExportController中，
+> 	
+	public HSSFWorkbook export(List<Map> list) {  
+        HSSFWorkbook wb = new HSSFWorkbook();  
+        List<HSSFSheet> sheetList = new ArrayList<HSSFSheet>();
+        List<HSSFRow> rowList = new ArrayList<HSSFRow>();
+        int[] num = new int[9];
+        for(String excelSheetBase : excelSheet) {
+        	HSSFSheet sheet = wb.createSheet(excelSheetBase);
+        	sheetList.add(sheet);
+        	HSSFRow row = sheet.createRow((int) 0);
+        	rowList.add(row);
+        }
+        HSSFCellStyle style = wb.createCellStyle();  
+        style.setAlignment(HSSFCellStyle.ALIGN_CENTER);  
+        for (int i = 0; i < excelHeader.length; i++) {
+        	for(int j=0; j < rowList.size(); j++) {
+        		HSSFCell cell = rowList.get(j).createCell(i);
+	            cell.setCellValue(excelHeader[i]);  
+	            cell.setCellStyle(style); 
+	            if("1,2,3,4,8".contains(String.valueOf(i))) {
+	            	sheetList.get(j).setColumnWidth(i, 12 * 256);
+	            } else if(i==5) {
+	            	sheetList.get(j).setColumnWidth(i, 60 * 256);  
+	            } else {
+	            	sheetList.get(j).setColumnWidth(i, 20 * 256);
+	            }	         
+        	}
+         // sheet
+        }
+        for (Map data : list) {  
+        	int index = Integer.parseInt(String.valueOf(data.get("idThird")))/10000000;
+        	index--;
+        	HSSFRow row =sheetList.get(index).createRow(++num[index]);  
+        	row.createCell(0).setCellValue(String.valueOf(data.get("name")).replace("null", ""));
+        	row.createCell(1).setCellValue(String.valueOf(data.get("idThird")).replace("null", ""));
+        	row.createCell(2).setCellValue(String.valueOf(data.get("firName")).replace("null", ""));
+        	row.createCell(3).setCellValue(String.valueOf(data.get("secName")).replace("null", ""));
+        	row.createCell(4).setCellValue(String.valueOf(data.get("belongLevel")).replace("null", ""));
+        	row.createCell(5).setCellValue(String.valueOf(data.get("systemFunction")).replace("null", ""));
+        	row.createCell(6).setCellValue(String.valueOf(data.get("department")).replace("null", ""));
+        	row.createCell(7).setCellValue(String.valueOf(data.get("projectInfo")).replace("null", "")); 
+        	row.createCell(8).setCellValue(String.valueOf(data.get("designInfo")).replace("null", ""));
+        	row.createCell(9).setCellValue(String.valueOf(data.get("codeName")).replace("null", ""));
+        }  
+        return wb;  
+    } 
+
+	public @ResponseBody void sysMessageExport(HttpServletRequest request, HttpServletResponse response) throws IOException {
+		List<Map> findData = architectureThirdSv.excelExport(0L,"");
+		Collections.sort(findData, new sysExportComparator());
+        HSSFWorkbook wb = export(findData);  
+        response.setContentType("application/vnd.ms-excel");  
+        Date nowtime = new Date();
+        DateFormat format=new SimpleDateFormat("yyyyMMdd");
+        String time=format.format(nowtime);
+        response.setHeader("Content-disposition", "attachment;filename="+new String("系统基线_".getBytes(),"iso-8859-1")+time+".xls");  
+        OutputStream ouputStream = response.getOutputStream();  
+        wb.write(ouputStream);  
+        ouputStream.flush();  
+        ouputStream.close(); 
+	}
 ### 是否存在环比变化计算
 ### 环比变化计算参照时间是否可选择
 ### 是否有曲线图展示模块
