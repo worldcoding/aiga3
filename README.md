@@ -8,6 +8,8 @@
 ### 单表最大数据量级
 ### 数据保留时间
 ### 建表方式(新建、复用单表或日表等)
+### 建索引
+### 分表（按日分表/按月分表）
 ## 二、查询功能模块设计
 ### 查询时间方式(特定时间选择or可选择时间区间)
 1.特定时间，对于显示每天报表的类型数据，默认特定指定当天；    
@@ -218,7 +220,7 @@
 
 ![Alt text](https://taoyf2012.github.io/doc/asiainfo/image/JpaRepository.png "Optional title")
 
-### 零, 基本操作原则
+### 零、基本操作原则
 
 #### 操作类
     1.在不需要验证数据就操作数据的情况下, 请使用@Query @Modifying 这样的方式通过写HQL来解决.
@@ -252,7 +254,7 @@
 	     private Long orgId;
 	}
 
-#### dao类
+#### dao类:DAO层的命名规范（模型域对象名称+Dao）
 1, 继承spring-data-jpa的操作接口 JpaRepository
 >     
 	public interface SysRoleDao extends JpaRepository<SysRole, Long>{
@@ -375,7 +377,7 @@
 	Pageable pageable = new PageRequest(pageNumber, pageSize);
 	Page<NaTestCase> result = testCaseDao.search(cons, pageable);
 	
-##一, 多表查询
+### 二, 多表查询
 实体类
 由hibernate生成器生成.
 >
@@ -486,5 +488,52 @@
 	}
 	// 这个类中属性, 来自各个entity中的属性.
 
-### 单表最大数据量级
-### 数据保留时间
+### service层代码编写
+这层代码，类名规范以Service结尾，最好继承一下BaseService，通常的代码逻辑放在这一层当中进行集中处理；
+>
+	@Service        /*供spring扫描的注解*/
+	@Transactional  /*该注解表面，本service中的方法均会开启事务*/
+	public class FunctionSv extends BaseService{
+		public static final int TOP_PARENT_ID = 0;
+		public static final int DEFAULTS_STATE_YES = 1;
+
+		@Autowired  /*供spring注入依赖*/
+		private AigaFunctionDao aigaFunctionDao;
+
+		public List<AigaFunction> findFunctions() {
+			return aigaFunctionDao.findAll();
+		}
+
+		public AigaFunction findOne(Long funcId) {
+			if(funcId == null || funcId < 0){
+				BusinessException.throwBusinessException(ErrorCode.Parameter_null, "funcId");
+			}
+			return aigaFunctionDao.findOne(funcId);
+		}
+		
+### controller层代码编写
+这层代码，类名规范，以Controller结尾
+>
+	@Controller     /*供spring mvc扫描的注解*/
+	@Api(value = "RoleController", description = "角色相关api")
+	public class RoleController {
+
+		@Autowired
+		private RoleSv roleSv;
+
+	    @Autowired
+	    private RoleFuncSv roleFuncSv;
+
+		@RequestMapping(path = "/sys/role/list")
+		public @ResponseBody JsonBean list(){
+			JsonBean bean = new JsonBean();
+			bean.setData(roleSv.findRoles());
+			return bean;
+		}
+
+		@RequestMapping(path = "/sys/role/save")
+		public @ResponseBody JsonBean save(RoleRequest roleRequest){
+			roleSv.saveRole(roleRequest);
+			return JsonBean.success;
+		}
+	}
