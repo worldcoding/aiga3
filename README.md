@@ -10,8 +10,12 @@
 ### 建表方式(新建、复用单表或日表等)
 ## 二、查询功能模块设计
 ### 查询时间方式(特定时间选择or可选择时间区间)
+1.特定时间，对于显示每天报表的类型数据，默认特定指定当天；    
+2.可选择时间，对于显示阶段性变化趋势类型的数据，暂定默认选定当月1号到当月当天之间的数据；    
 ### 查询耗时要求
+1.考虑到避免影响用户的使用体验，将页面显示的数据及时的呈现，查询耗时最好维持在2秒钟以内；    
 ### 是否有最大查询时间跨度限制
+1.
 ### 是否支持结果导出
 项目对于Excel导出功能已经封装到ExcelExportController中，
 > 	
@@ -76,20 +80,24 @@
         ouputStream.close(); 
 	}
 ### 是否存在环比变化计算
+1.日环比计算
+将
+2.月环比计算
 ### 环比变化计算参照时间是否可选择
+
 ### 是否有曲线图展示模块
 #### echarts规范/近7天、近30天曲线(同理)
 1、项目引入图形化数据展示可以使用Echats组件， [Echarts官网](http://echarts.baidu.com/examples/ "Title")
 > 
-require("lib/ztree/3.5.28/js/jquery.ztree.excheck.min.js");
+	require("lib/ztree/3.5.28/js/jquery.ztree.excheck.min.js");
 
 2、然后在绘图前我们需要为 ECharts 准备一个具备高宽的 DOM 容器。
 
 > 
-<body>
-    <!-- 为 ECharts 准备一个具备大小（宽高）的 DOM -->
-    <div id="main" style="width: 600px;height:400px;"></div>
-</body>
+	<body>
+	    <!-- 为 ECharts 准备一个具备大小（宽高）的 DOM -->
+	    <div id="main" style="width: 600px;height:400px;"></div>
+	</body>
 
 3、然后就可以通过 echarts.init 方法初始化一个 echarts 实例并通过 setOption 方法生成一个简单的柱状图，下面是完整代码。
 
