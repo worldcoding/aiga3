@@ -80,11 +80,13 @@
 ### 是否有曲线图展示模块
 #### echarts规范/近7天、近30天曲线(同理)
 1、项目引入图形化数据展示可以使用Echats组件， [Echarts官网](http://echarts.baidu.com/examples/ "Title")
-> require("lib/ztree/3.5.28/js/jquery.ztree.excheck.min.js");
+> 
+require("lib/ztree/3.5.28/js/jquery.ztree.excheck.min.js");
 
 2、然后在绘图前我们需要为 ECharts 准备一个具备高宽的 DOM 容器。
 
-> <body>
+> 
+<body>
     <!-- 为 ECharts 准备一个具备大小（宽高）的 DOM -->
     <div id="main" style="width: 600px;height:400px;"></div>
 </body>
@@ -197,4 +199,87 @@
 		
 ### extend
 ### 文件上传、下载
+## 三、代码标准
+### 基础说明
+---
+1.数据库上, 目前我们的表是不存在外键的 (也不建议) , 所以ORM框架的mapping中在自动生成上面也就没有关联信息(既不存在@OneToMany等)
 
+2.DAO层, 采用了spring-data-jpa, hibernate, JPA规范, JPA规范具体的实现由hibernate完成, spring-data-jpa对hibernate进行使用层面的API进行了封装,所以对于业务开发人员, 我们直接接触的是spring-data-jpa提供的操作方式.spring-data-jpa 1.11.1版本文档.
+
+3.spring-data-jpa提供的DAO层的基类
+
+![Alt text](https://taoyf2012.github.io/doc/asiainfo/image/JpaRepository.png "Optional title")
+
+### 零, 基本操作原则
+
+#### 操作类
+    1.在不需要验证数据就操作数据的情况下, 请使用@Query @Modifying 这样的方式通过写HQL来解决.
+    2.在需要验证的情况下, 在合理的编写代码成本和基本性能要求之内, 尽量使用JpaRepository中所提供的操作方法.
+#### 查询类
+    1.在合理的编写代码成本和基本性能要求之内, 尽量使用JpaRepository中所提供的查询方法.
+    2.在上述无法满足情况下, 考虑使用定义方法的方式来执行查询HQL.
+    3.定义方法不满足的情况下, 使用@Query来定义HQL和执行. – 这里先不要使用naviteSql了, 目前还无法将数据映射到一个对象中, 等后续再说.
+    4.在以上都无法满足的情况下, 使用SearchAndPageRepository进行动态HQL查询和naviteSql查询.
+    5.在以上都无法满足的情况下, 请提出来, 我们讨论.
+### 一、单表操作
+
+#### 实体类
+由hibernate生成器生成.
+
+>	
+	@Entity
+	@Table(name="SYS_ROLE")
+	public class SysRole  {
+	     private long roleId;
+	     private String code;
+	     private String name;
+	     private String notes;
+	     private Byte state;
+	     private Long doneCode;
+	     private Date createDate;
+	     private Date doneDate;
+	     private Date validDate;
+	     private Date expireDate;
+	     private Long opId;
+	     private Long orgId;
+	}
+
+#### dao类
+1, 继承spring-data-jpa的操作接口 JpaRepository
+>     
+	public interface SysRoleDao extends JpaRepository<SysRole, Long>{
+	
+	}
+
+由此, 就拥有就拥有CrudRepository, PagingAndSortingRepository, JpaRepository的基础的API.
+* CrudRepository : 对save, delete, findOne, 这些基于单表的增删改查的方法.save保存是根据传入的实体类判断是新装还是修改.查询只是基于主键的简单查询
+* PagingAndSortingRepository : 对查询进行增强, 对排序和分页进行支持.
+* JpaRepository : 进一步增强单表的简单的单表的增删改查的方法.
+2, 自定义根据方法名生成sql的查询方法
+定义方法名基本按照find…By, read…By, query…By, count…By, and get…By定义, 同时在方法名中体现查询的属性名.
+
+** 举例 **
+>     
+	public interface SysRoleDao extends JpaRepository<SysRole, Long>{
+	  //接卸到sql : select * from SYS_ROLE r where r.name = ? and r.state = ?
+	  List<SysRole> findByNameAndState(String name, Byte state);
+	  ...
+	}
+
+** 方法名中关键字说明 **
+
+官方文档位置 :[spring-data-jpa 1.11.1版本文档 -关键字说明.](https://docs.spring.io/spring-data/jpa/docs/1.11.1.RELEASE/reference/html/#jpa.query-methods.query-creation "Title")
+这里只是摘抄一些常用的 :
+
+|数据库中关键字|数据库中关键字|举例|对应sql|
+|:---|:---:|:---:|:---:|
+|AND|And|findByNameAndState(String name, Byte state)|…where name = ?1 and state = ?2|
+|OR|Or|findByNameAndCode(String name, String code)|…where name = ?1 or code = ?2|
+|LIKE|Like|findByNameAndCode(String name, String code)|…where name like ?1|
+|IN|In|findByNameAndCode(String name, String code)|…where name in ?1|
+|...|...|...|...|
+
+其他详见官方文档
+
+### 单表最大数据量级
+### 数据保留时间
