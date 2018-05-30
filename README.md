@@ -15,7 +15,18 @@
 ### 环比变化计算参照时间是否可选择
 ### 是否有曲线图展示模块
 #### echarts规范/近7天、近30天曲线(同理)
-##### [Echarts官网](http://echarts.baidu.com/examples/ "Title")
+1、项目引入图形化数据展示可以使用Echats组件， [Echarts官网](http://echarts.baidu.com/examples/ "Title")
+> require("lib/ztree/3.5.28/js/jquery.ztree.excheck.min.js");
+
+2、然后在绘图前我们需要为 ECharts 准备一个具备高宽的 DOM 容器。
+
+> <body>
+    <!-- 为 ECharts 准备一个具备大小（宽高）的 DOM -->
+    <div id="main" style="width: 600px;height:400px;"></div>
+</body>
+
+3、然后就可以通过 echarts.init 方法初始化一个 echarts 实例并通过 setOption 方法生成一个简单的柱状图，下面是完整代码。
+
 >   
     var myChart = echarts.init(Page.findId('archiIndexViewMax')[0]);
             myChart.showLoading({
