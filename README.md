@@ -21,70 +21,80 @@
 ### 是否支持结果导出
 项目对于Excel导出功能已经封装到ExcelExportController中，
 > 	
-	public HSSFWorkbook export(List<Map> list) {  
-        HSSFWorkbook wb = new HSSFWorkbook();  
-        List<HSSFSheet> sheetList = new ArrayList<HSSFSheet>();
-        List<HSSFRow> rowList = new ArrayList<HSSFRow>();
-        int[] num = new int[9];
-        for(String excelSheetBase : excelSheet) {
-        	HSSFSheet sheet = wb.createSheet(excelSheetBase);
-        	sheetList.add(sheet);
-        	HSSFRow row = sheet.createRow((int) 0);
-        	rowList.add(row);
-        }
-        HSSFCellStyle style = wb.createCellStyle();  
-        style.setAlignment(HSSFCellStyle.ALIGN_CENTER);  
-        for (int i = 0; i < excelHeader.length; i++) {
-        	for(int j=0; j < rowList.size(); j++) {
-        		HSSFCell cell = rowList.get(j).createCell(i);
-	            cell.setCellValue(excelHeader[i]);  
-	            cell.setCellStyle(style); 
-	            if("1,2,3,4,8".contains(String.valueOf(i))) {
-	            	sheetList.get(j).setColumnWidth(i, 12 * 256);
-	            } else if(i==5) {
-	            	sheetList.get(j).setColumnWidth(i, 60 * 256);  
-	            } else {
-	            	sheetList.get(j).setColumnWidth(i, 20 * 256);
-	            }	         
-        	}
-         // sheet
-        }
-        for (Map data : list) {  
-        	int index = Integer.parseInt(String.valueOf(data.get("idThird")))/10000000;
-        	index--;
-        	HSSFRow row =sheetList.get(index).createRow(++num[index]);  
-        	row.createCell(0).setCellValue(String.valueOf(data.get("name")).replace("null", ""));
-        	row.createCell(1).setCellValue(String.valueOf(data.get("idThird")).replace("null", ""));
-        	row.createCell(2).setCellValue(String.valueOf(data.get("firName")).replace("null", ""));
-        	row.createCell(3).setCellValue(String.valueOf(data.get("secName")).replace("null", ""));
-        	row.createCell(4).setCellValue(String.valueOf(data.get("belongLevel")).replace("null", ""));
-        	row.createCell(5).setCellValue(String.valueOf(data.get("systemFunction")).replace("null", ""));
-        	row.createCell(6).setCellValue(String.valueOf(data.get("department")).replace("null", ""));
-        	row.createCell(7).setCellValue(String.valueOf(data.get("projectInfo")).replace("null", "")); 
-        	row.createCell(8).setCellValue(String.valueOf(data.get("designInfo")).replace("null", ""));
-        	row.createCell(9).setCellValue(String.valueOf(data.get("codeName")).replace("null", ""));
-        }  
-        return wb;  
-    } 
+	public HSSFWorkbook export(List<Map> list) { 
+		//创建Excel对象
+		HSSFWorkbook wb = new HSSFWorkbook();  
+		//创建sheet页对象列表
+		List<HSSFSheet> sheetList = new ArrayList<HSSFSheet>();
+		//创建row行对象列表
+		List<HSSFRow> rowList = new ArrayList<HSSFRow>();
+		int[] num = new int[9];
+		for(String excelSheetBase : excelSheet) {
+			//循环创建9个sheet页对象，并分别创建第一行设置表头
+			HSSFSheet sheet = wb.createSheet(excelSheetBase);
+			sheetList.add(sheet);
+			HSSFRow row = sheet.createRow((int) 0);
+			rowList.add(row);
+		}
+		//为excel对象添加样式，设置合并单元格，行高，列宽
+		HSSFCellStyle style = wb.createCellStyle();  
+		style.setAlignment(HSSFCellStyle.ALIGN_CENTER);  
+		for (int i = 0; i < excelHeader.length; i++) {
+			for(int j=0; j < rowList.size(); j++) {
+				HSSFCell cell = rowList.get(j).createCell(i);
+			    cell.setCellValue(excelHeader[i]);  
+			    cell.setCellStyle(style); 
+			    if("1,2,3,4,8".contains(String.valueOf(i))) {
+				sheetList.get(j).setColumnWidth(i, 12 * 256);
+			    } else if(i==5) {
+				sheetList.get(j).setColumnWidth(i, 60 * 256);  
+			    } else {
+				sheetList.get(j).setColumnWidth(i, 20 * 256);
+			    }	         
+			}
+		}
+		//将数据填充到excel对象中sheet页的每一行中
+		for (Map data : list) {  
+			int index = Integer.parseInt(String.valueOf(data.get("idThird")))/10000000;
+			index--;
+			HSSFRow row =sheetList.get(index).createRow(++num[index]);  
+			row.createCell(0).setCellValue(String.valueOf(data.get("name")).replace("null", ""));
+			row.createCell(1).setCellValue(String.valueOf(data.get("idThird")).replace("null", ""));
+			row.createCell(2).setCellValue(String.valueOf(data.get("firName")).replace("null", ""));
+			row.createCell(3).setCellValue(String.valueOf(data.get("secName")).replace("null", ""));
+			row.createCell(4).setCellValue(String.valueOf(data.get("belongLevel")).replace("null", ""));
+			row.createCell(5).setCellValue(String.valueOf(data.get("systemFunction")).replace("null", ""));
+			row.createCell(6).setCellValue(String.valueOf(data.get("department")).replace("null", ""));
+			row.createCell(7).setCellValue(String.valueOf(data.get("projectInfo")).replace("null", "")); 
+			row.createCell(8).setCellValue(String.valueOf(data.get("designInfo")).replace("null", ""));
+			row.createCell(9).setCellValue(String.valueOf(data.get("codeName")).replace("null", ""));
+		}  
+		return wb;  
+	    } 
 
 	public @ResponseBody void sysMessageExport(HttpServletRequest request, HttpServletResponse response) throws IOException {
+		//查询后台数据库中的数据
 		List<Map> findData = architectureThirdSv.excelExport(0L,"");
+		//排序
 		Collections.sort(findData, new sysExportComparator());
-        HSSFWorkbook wb = export(findData);  
-        response.setContentType("application/vnd.ms-excel");  
-        Date nowtime = new Date();
-        DateFormat format=new SimpleDateFormat("yyyyMMdd");
-        String time=format.format(nowtime);
-        response.setHeader("Content-disposition", "attachment;filename="+new String("系统基线_".getBytes(),"iso-8859-1")+time+".xls");  
-        OutputStream ouputStream = response.getOutputStream();  
-        wb.write(ouputStream);  
-        ouputStream.flush();  
-        ouputStream.close(); 
-	}
+		//创建excel对象
+		HSSFWorkbook wb = export(findData); 
+		//设置response返回头信息，以及excel文件名
+		response.setContentType("application/vnd.ms-excel");  
+		Date nowtime = new Date();
+		DateFormat format=new SimpleDateFormat("yyyyMMdd");
+		String time=format.format(nowtime);
+		response.setHeader("Content-disposition", "attachment;filename="+new String("系统基线_".getBytes(),"iso-8859-1")+time+".xls");  
+		OutputStream ouputStream = response.getOutputStream();  
+		wb.write(ouputStream);  
+		ouputStream.flush();  
+		ouputStream.close(); 
+		}
 ### 是否存在环比变化计算
 1.日环比计算
-将
+计算公式：（今日数据-昨日数据）/昨日数据的百分比值%
 2.月环比计算
+计算公式：（今日数据-上月今日数据）/上月今日数据的百分比值%
 ### 环比变化计算参照时间是否可选择
 
 ### 是否有曲线图展示模块
