@@ -280,6 +280,203 @@ require("lib/ztree/3.5.28/js/jquery.ztree.excheck.min.js");
 |...|...|...|...|
 
 其他详见官方文档
+3, 自定义sql的查询方法 @Query
+相当于给DAO的方法配置一句具体执行的sql.
+** 举例 **
+>
+	public interface SysRoleDao extends JpaRepository<SysRole, Long>{
+	  //根据@Query中的sql执行
+	  @Query("select r from SysRole r where r.state = ?1")
+	  List<SysRole> findAll(Byte state);
+
+	  //根据@Query中的sql执行
+	  @Query("select r.state, count(1) as number from SysRole r where r.state = ?1 group by r.state")
+	  List<Object[]> findAll(Byte state);
+	  ...
+	}
+
+返回值说明 : 
+返回的字段, 如果可以通过Entity类中的mapping注解找到对于的属性则能够返回对应的对象; 如果不能, 则只能定义Object数组来存放返回值. – 这个问题的优化, 等待后续解决. 
+
+4, 自定义sql的执行方法 @Query @Modifying
+由于JpaRepository的操作有限, 所以无法满足无穷的个性化操作, 所以可以通过写sql的方式来个性化修改,删除等类型的操作.
+** 举例 **
+>
+	public interface SysRoleDao extends JpaRepository<SysRole, Long>{
+
+	  //根据@Query中的sql执行
+	  @Modifying
+	  @Query("update SysRole r set r.state = ?2 where r.name = ?1")
+	  void updateState(String name, Byte state);
+	  ...
+	}
+
+
+5, 自定义基类 : SearchAndPageRepository, 用于动态sql的查询
+有一种场景, 查询的条件是会变化的, 如果用穷举的方式来定义方法, 那么只会降低易用度. 所以增加这样的功能.
+
+具体API说明
+1.
+>
+	/**
+	 * @Description: 根据条件信息, 查询单表信息
+	 * @param cons 属性条件
+	 * @return
+	 */
+	List<T> search(List<Condition> cons);
+2.
+>
+	/**
+	 * @Description: 根据条件和分页信息, 查询单表信息
+	 * @param cons 属性条件
+	 * @param pageable 分页信息
+	 * @return
+	 */
+	Page<T> search(List<Condition> cons, Pageable pageable);
+	
+** 举例 **
+
+>
+	List<Condition> cons = new ArrayList<Condition>();
+
+	if(StringUtils.isNoneBlank(testName)){
+	  cons.add(new Condition("testName", "%".concat(testName).concat("%"), Condition.Type.LIKE));
+	}
+	if(sysId > 0){
+	  cons.add(new Condition("sysId", sysId, Condition.Type.EQ));
+	}
+	if(sysSubId > 0){
+	  cons.add(new Condition("sysSubId", sysSubId, Condition.Type.EQ));
+	}
+	if(funId > 0){
+	  cons.add(new Condition("funId", funId, Condition.Type.EQ));
+	}
+	if(important > 0){
+	  cons.add(new Condition("important", important, Condition.Type.EQ));
+	}
+
+	if(pageNumber <= 0){
+	  pageNumber = 0;
+	}else{
+	  pageNumber--;
+	}
+	if(pageSize <= 0){
+	  pageSize = BusiConstant.PAGE_SIZE_DEFAULT;
+	}
+
+	Pageable pageable = new PageRequest(pageNumber, pageSize);
+	Page<NaTestCase> result = testCaseDao.search(cons, pageable);
+	
+##一, 多表查询
+实体类
+由hibernate生成器生成.
+>
+	@Entity
+	@Table(name="SYS_ROLE")
+	public class SysRole  {
+	     private long roleId;
+	     private String code;
+	     private String name;
+	     private String notes;
+	     private Byte state;
+	     private Long doneCode;
+	     private Date createDate;
+	     private Date doneDate;
+	     private Date validDate;
+	     private Date expireDate;
+	     private Long opId;
+	     private Long orgId;
+	}
+
+	@Entity
+	@Table(name = "AIGA_ROLE_FUNC")
+	public class AigaRoleFunc {
+	    private long funcRoleTrlatId;
+	    private Long funcId;
+	    private Long roleId;
+	}
+
+	@Entity
+	@Table(name="AIGA_FUNCTION")
+	public class AigaFunction{
+	     private long funcId;
+	     private String funcCode;
+	     private String name;
+	}
+
+这3个表时多对多的关系.
+1, 自定义多表sql的查询方法 @Query
+** 举例 **
+>
+	public interface SysRoleDao extends JpaRepository<SysRole, Long>{
+	  //根据@Query中的sql执行
+	  @Query("select f from SysRole ro, AigaRoleFunc r, AigaFunction f where ro.roleId = r.roleId and r.funcId = f.funcId")
+	  List<AigaFunction> findAllFunctions(String roleName);
+
+	  //根据@Query中的sql执行
+	  @Query("select ro,f from SysRole ro, AigaRoleFunc r, AigaFunction f where ro.roleId = r.roleId and r.funcId = f.funcId")
+	  List<Object[]> findAllFunctions(String roleName);
+	  //这个Object数字第一个是SysRole类, 第二个是AigaFunction类.
+	  ...
+	}
+返回值说明 :
+返回的字段, 如果可以通过Entity类中的mapping注解找到对于的属性则能够返回对应的对象; 如果不能, 则只能定义Object数组来存放返回值. – 这个问题的优化, 等待后续解决.
+
+2, 自定义基类 : SearchAndPageRepository, 用于native sql的查询
+有一种场景, 多表查询, 查询的条件还是变化的, 所以增加这样的功能.
+
+具体API说明
+
+使用参数的理由是 : 因为直接拼sql, 会有被sql注入的危险.
+
+>
+	//1,
+	/**
+	 * 根据原生SQL按照分页查询, 返回Page<Map<String, Object>>
+
+	 * @param nativeSQL 原生sql
+	 * @param parameters sql中的参数
+	 * @param pageable
+	 * @return
+	 */
+	Page<Map> searchByNativeSQL(String nativeSQL, List<Parameter> parameters, Pageable pageable);
+
+	//使用
+	List<Parameter> list =new ArrayList<Parameter>();
+	StringBuilder sql = new StringBuilder("select au.*, ro.name from sys_role ro cross join aiga_author au where ro.role_id=au.role_id");
+
+	sql.append(" and au.staff_id = :staff_id");
+	list.add(new Parameter("staff_id", 11l));
+	dao.searchByNativeSQL(sql.toString(), list, new PageRequest(1, 10)
+
+	//2,
+	/**
+	 * 根据原生SQL查询, PageList<R> , R代表返回类型Class
+	 * @param nativeSQL 原生sql
+	 * @param parameters sql中的参数
+	 * @param domainClass 返回对象类型
+	 * @param pageable
+	 * @return
+	 */
+	 <R> Page<R> searchByNativeSQL(String nativeSQL, List<Parameter> parameters, Class<R> domainClass, Pageable pageable);
+
+	//使用
+	List<Parameter> list =new ArrayList<Parameter>();
+	StringBuilder sql = new StringBuilder("select au.*, ro.name from sys_role ro cross join aiga_author au where ro.role_id=au.role_id");
+	sql.append(" and au.staff_id = :staff_id");
+	list.add(new Parameter("staff_id", 11l));
+	sql.toString(), list, AigaAuthorView.class, new PageRequest(1, 10)
+
+	//AigaAuthorView
+	@Data
+	public class AigaAuthorView {
+	    private Long roleAuthorId;
+	    private long roleId;
+	    private Long staffId;
+	    private String name;
+	    private char xxx;
+	}
+	// 这个类中属性, 来自各个entity中的属性.
 
 ### 单表最大数据量级
 ### 数据保留时间
