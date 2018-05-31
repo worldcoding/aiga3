@@ -493,7 +493,7 @@ select * from aiam.cfg_task_param_value;     //task任务id与指标group_id关�
 	}
 
 这3个表时多对多的关系.
-1, 自定义多表sql的查询方法 @Query
+1, 自定义多表sql的查询方法 @Query    
 ** 举例 **
 >
 	public interface SysRoleDao extends JpaRepository<SysRole, Long>{
