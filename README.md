@@ -367,7 +367,7 @@ select * from aiam.cfg_task_param;
 
 其他详见官方文档
 3, 自定义sql的查询方法 @Query
-相当于给DAO的方法配置一句具体执行的sql.
+相当于给DAO的方法配置一句具体执行的sql.    
 ** 举例 **
 >
 	public interface SysRoleDao extends JpaRepository<SysRole, Long>{
