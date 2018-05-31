@@ -597,8 +597,8 @@ select * from aiam.cfg_task_param;
 		@Autowired
 		private RoleSv roleSv;
 
-	    @Autowired
-	    private RoleFuncSv roleFuncSv;
+	    	@Autowired
+	    	private RoleFuncSv roleFuncSv;
 
 		@RequestMapping(path = "/sys/role/list")
 		public @ResponseBody JsonBean list(){
