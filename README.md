@@ -48,6 +48,7 @@ select * from aiga_staff where id=66 and code='sals' ->走索引。
 select * from aiga_staff where id=66 OR code='sals' ->将进行全表扫描。不走索引   
 select * from aiga_staff where id=66 ->走索引。   
 select * from aiga_staff where code='sals' ->进行全表扫描、不走索引。   
+通过创建唯一性索引，可以保证数据库表中每一行数据的唯一性。   
 如果在where子句中有OR操作符或单独引用code列(索引列的后面列)则将不会走索引，将会进行全表扫描。     
 ### 分表分区（按日分表/按月分表）
 一般不按照数据量计算，oracle给的建议是1G，oracle推荐是单表500万，数据量能大于1G，那么就需要分区。具体的数据量没给那么清晰。
