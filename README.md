@@ -178,19 +178,19 @@ select * from aiga_staff where code='sals' ->进行全表扫描、不走索引�
 3、然后就可以通过 echarts.init 方法初始化一个 echarts 实例并通过 setOption 方法生成一个简单的柱状图，下面是完整代码。
 
 >   
-    var myChart = echarts.init(Page.findId('archiIndexViewMax')[0]);
+    var myChart = echarts.init(Page.findId('archiIndexViewMax')[0]);//echarts初始化操作
             myChart.showLoading({
                 text: '读取数据中...' //loading，是在读取数据的时候显示
             });            
 			var option = {
 				title : {
-			        text: '指标情况',
-			        subtext: '数据采集截止时间：XX月XX日XX:XX'
+			        text: '指标情况',//主标题
+			        subtext: '数据采集截止时间：XX月XX日XX:XX'//副标题
 			    },
 			    tooltip : {
 			        trigger: 'axis'
 			    },
-			    legend: {
+			    legend: {//数据项指标
 			        data:['营业库A','营业库B','营业库C','营业库D','渠道资源库']
 			    },
 			    toolbox: {
@@ -209,19 +209,19 @@ select * from aiga_staff where code='sals' ->进行全表扫描、不走索引�
 	                        type: ['bar', 'line']
 	                    },
 				calculable : true,
-			    xAxis : [
+			    xAxis : [//横坐标轴展示维度
 			        {
 			            type : 'category',
 			            boundaryGap: false,
 			            data : ['1月','2月','3月','4月','5月','6月','7月','8月','9月','10月','11月','12月']
 			        }
 			    ],
-			    yAxis : [
+			    yAxis : [//纵坐标轴展示数值维度
 			        {
 			            type : 'value'
 			        }
 			    ],
-			    series : [
+			    series : [//具体数据项，名称，图类型，坐标横纵轴数据
 			        {
 			            name:'营业库A',
 			            type:'line',
