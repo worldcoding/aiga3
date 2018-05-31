@@ -290,11 +290,11 @@ select * from aiam.cfg_task_param_value;     //task任务id与指标group_id关�
 
 ## 三、代码标准
 ### 基础说明  
-1.数据库上, 目前我们的表是不存在外键的 (也不建议) , 所以ORM框架的mapping中在自动生成上面也就没有关联信息(既不存在@OneToMany等)
+1.目前，平台后台开发分4层结构调用，当web服务区接收到request请求后，依次调用Controller层、Service层、Dao层和Entity层，最后操作到对应的表数据。实体类Entity层面可以ORM自动生成，也可以手动编写，注意要与数据库中的表名、表字段一一对应；数据库上, 目前我们的表是不存在外键的 (也不建议) , 所以ORM框架的mapping中在自动生成上面也就没有关联信息(既不存在@OneToMany等)    
 
-2.DAO层, 采用了spring-data-jpa, hibernate, JPA规范, JPA规范具体的实现由hibernate完成, spring-data-jpa对hibernate进行使用层面的API进行了封装,所以对于业务开发人员, 我们直接接触的是spring-data-jpa提供的操作方式.spring-data-jpa 1.11.1版本文档.
+2.DAO层,主要用于处理增删改查操作，采用了spring-data-jpa, hibernate, JPA规范, JPA规范具体的实现由hibernate完成, spring-data-jpa对hibernate进行使用层面的API进行了封装,所以对于业务开发人员, 我们直接接触的是spring-data-jpa提供的操作方式.spring-data-jpa 1.11.1版本文档.    
 
-3.spring-data-jpa提供的DAO层的基类
+3.spring-data-jpa提供的DAO层的基类    
 
 ![Alt text](https://taoyf2012.github.io/doc/asiainfo/image/JpaRepository.png "Optional title")
 
@@ -312,7 +312,7 @@ select * from aiam.cfg_task_param_value;     //task任务id与指标group_id关�
 ### 一、单表操作
 
 #### 实体类
-由hibernate生成器生成.
+由hibernate生成器生成.在hibernate.reveng.xml配置文件中配置好表名，运行maven build...(hibernate3:hbm2java)即可生成模型域对象；   
 
 >	
 	@Entity
@@ -332,8 +332,8 @@ select * from aiam.cfg_task_param_value;     //task任务id与指标group_id关�
 	     private Long orgId;
 	}
 
-#### dao类:DAO层的命名规范（模型域对象名称+Dao）
-1, 继承spring-data-jpa的操作接口 JpaRepository
+#### dao类:DAO层的命名规范（模型域对象名称+Dao）   
+1, 实现增删改查操作，继承spring-data-jpa的操作接口 JpaRepository  
 >     
 	public interface SysRoleDao extends JpaRepository<SysRole, Long>{
 	
@@ -590,7 +590,7 @@ select * from aiam.cfg_task_param_value;     //task任务id与指标group_id关�
 		}
 		
 ### controller层代码编写
-这层代码，类名规范，以Controller结尾
+这层代码，类名规范，以Controller结尾，进行处理后的数据封装返回；  
 >
 	@Controller     /*供spring mvc扫描的注解*/
 	@Api(value = "RoleController", description = "角色相关api")
