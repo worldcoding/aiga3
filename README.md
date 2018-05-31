@@ -279,14 +279,15 @@ select * from aiga_staff where code='sals' ->进行全表扫描、不走索引�
 		
 ### 定时采集任务相关配置规定*
 涉及表配置：  
-select * from aiam.am_core_index;   //指标主表
-select * from aiam.am_core_index_ext;    //指标分表，指标执行sql配置
-select * from aiam.cfg_db_url;  //数据源配置tns
-select * from aiam.cfg_db_acct;  //用户名密码信息配置
-select * from aiam.cfg_db_relat;  //关联配置
-select * from aiam.cfg_task;   //配置task任务，task任务的实现类以及task执行时间频率
-select * from aiam.cfg_task_param_value;     //task任务id与指标group_id关联
-注意事项：（待补充。。。）    
+select * from aiam.am_core_index;   //指标主表    
+select * from aiam.am_core_index_ext;    //指标分表，指标执行sql配置    
+select * from aiam.cfg_db_url;  //数据源配置tns    
+select * from aiam.cfg_db_acct;  //用户名密码信息配置    
+select * from aiam.cfg_db_relat;  //关联配置    
+select * from aiam.cfg_task;   //配置task任务，task任务的实现类以及task执行时间频率    
+select * from aiam.cfg_task_param_value;     //task任务id与指标group_id关联    
+注意事项：（待补充。。。）     
+
 ## 三、代码标准
 ### 基础说明  
 1.数据库上, 目前我们的表是不存在外键的 (也不建议) , 所以ORM框架的mapping中在自动生成上面也就没有关联信息(既不存在@OneToMany等)
