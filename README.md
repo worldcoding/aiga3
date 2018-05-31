@@ -43,12 +43,12 @@ oracle推荐是单表500万，考虑到业务上面大都是连表查询，索�
 3、不应该在小表上建设索引。      
 创建索引:    
 单一索引:Create Index <Index-Name> On <Table_Name>(Column_Name);    
-复合索引: Create Index i_deptno_job on emp(deptno,job); —>在emp表的deptno、job列建立索引。   
-select * from emp where deptno=66 and job='sals' ->走索引。   
-select * from emp where deptno=66 OR job='sals' ->将进行全表扫描。不走索引   
-select * from emp where deptno=66 ->走索引。   
-select * from emp where job='sals' ->进行全表扫描、不走索引。   
-如果在where 子句中有OR操作符或单独引用Job列(索引列的后面列)则将不会走索引，将会进行全表扫描。   
+复合索引: Create Index index_aiga_staff on aiga_staff(id,code); —>在aiga_staff表的id、code列建立索引。   
+select * from aiga_staff where id=66 and code='sals' ->走索引。   
+select * from aiga_staff where id=66 OR code='sals' ->将进行全表扫描。不走索引   
+select * from aiga_staff where id=66 ->走索引。   
+select * from aiga_staff where code='sals' ->进行全表扫描、不走索引。   
+如果在where子句中有OR操作符或单独引用code列(索引列的后面列)则将不会走索引，将会进行全表扫描。     
 ### 分表分区（按日分表/按月分表）
 一般不按照数据量计算，oracle给的建议是1G，oracle推荐是单表500万，数据量能大于1G，那么就需要分区。具体的数据量没给那么清晰。
 不过个人认为，是否需要分区要根据实际需求来判断，比如几百万的数据量，总会按月查询，每月大概几十万到一百万左右，那么就可以分区，这样可以减少查询等待时间，并且减少一次查询的数据量。    
