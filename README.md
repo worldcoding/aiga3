@@ -278,7 +278,14 @@ select * from emp where job='sals' ->进行全表扫描、不走索引。
 		
 		
 ### 定时采集任务相关配置规定
-
+涉及表配置：  
+select * from aiam.am_core_index;  
+select * from aiam.am_core_index_ext;  
+select * from aiam.cfg_db_url;  
+select * from aiam.cfg_db_acct;  
+select * from aiam.cfg_db_relat;  
+select * from aiam.cfg_task;  
+select * from aiam.cfg_task_param;  
 ## 三、代码标准
 ### 基础说明  
 1.数据库上, 目前我们的表是不存在外键的 (也不建议) , 所以ORM框架的mapping中在自动生成上面也就没有关联信息(既不存在@OneToMany等)
